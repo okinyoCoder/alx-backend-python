@@ -18,7 +18,7 @@ def stream_users_in_batches(batch_size):
             batch = cursor.fetchmany(batch_size)
             if not batch:
                 break
-            yield batch
+            return batch
 
         cursor.close()
         mydb.close()
