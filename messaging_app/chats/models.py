@@ -10,6 +10,9 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     ]
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    password = models.CharField(_('password'), max_length=128)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='guest')
