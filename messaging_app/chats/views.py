@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
-from django.contrib.auth import get_user_model
+from rest_framework import filters
 from .serializers import UserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
