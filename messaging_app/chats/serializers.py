@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import User, Conversation, Message
 
-class UserSerializers(serializers.Serializer):
+
+class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
     full_name = serializers.SerializerMethodField()
@@ -17,10 +18,10 @@ class UserSerializers(serializers.Serializer):
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
 
-        def validate(self, data):
-            if data['password'] != data['confirm_password']:
-                raise serializers.ValidationError("Password doesnt match.")
-            return data
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Password doesnt match.")
+        return data
         
     def create(self, validated_data):
         validated_data.pop('confirm_password') 
@@ -30,8 +31,8 @@ class UserSerializers(serializers.Serializer):
         user.save()
         return user
 
-class MessageSerializers(serializers.Serializer):
-    sender = UserSerializers(read_only=True)
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
 
     class meta:
         model = Message
@@ -40,9 +41,9 @@ class MessageSerializers(serializers.Serializer):
             'conversation', 'sent_at'
         ]
 
-class ConversationSerializers(serializers.Serializer):
-    messages = MessageSerializers(many=True, read_only=True)
-    participants = UserSerializers(many=True, read_only=True)
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True, read_only=True)
+    participants = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Conversation
