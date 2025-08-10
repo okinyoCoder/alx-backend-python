@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
-from rest_framework import filters
+from .permissions import IsParticipantOfConversation
 from .serializers import UserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -14,27 +14,33 @@ class UserViewSet(viewsets.ModelViewSet):
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all().prefetch_related('participants', 'messages')
     serializer_class = ConversationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsParticipantOfConversation]
 
     def perform_create(self, serializer):
-        # Automatically include the current user in the participants
+        if getattr(self, 'swagger_fake_view', False):
+            return  # Prevent Swagger crash
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
 
     def get_queryset(self):
-        # Return only conversations where the user is a participant
+        if getattr(self, 'swagger_fake_view', False):
+            return Conversation.objects.none()  # Prevent Swagger crash
         return self.queryset.filter(participants=self.request.user)
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all().select_related('sender', 'conversation')
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsParticipantOfConversation]
 
     def perform_create(self, serializer):
-        # Automatically set the sender to the current user
+        if getattr(self, 'swagger_fake_view', False):
+            return  # Prevent Swagger crash
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        # Filter messages to only those in conversations the user is part of
+        if getattr(self, 'swagger_fake_view', False):
+            return Message.objects.none()  # Prevent Swagger crash
         return self.queryset.filter(conversation__participants=self.request.user)
+
 
